@@ -3,13 +3,21 @@
     // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
     // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [    
         {
-            "name": "Python: Тест",
+            "name": "Python: Parse Test",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["", "data/1.1 Вся Россия - YW season data.txt"],
+            "args": ["Брянская область", "data/9.2 Брянская обл.txt"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Delete Test",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args": ["delete.list"],
             "console": "integratedTerminal"
         }
     ]

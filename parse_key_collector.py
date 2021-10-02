@@ -9,7 +9,7 @@ def trend(array, lastmonth):
 
     seasonpeek = []
     for i in range(12):
-        if array[i] > averageYear * 1.6:
+        if array[i] > averageYear * 1.2:
             if lastmonth > i:
                 seasonpeek.append(lastmonth - i)
             else:
@@ -42,31 +42,40 @@ with open(args.filename, "r") as f:
             print('Ошибка парсинга: ', row_parsed[0])
             continue
 
+        #* Подготовка к заполнению requests
+        volumes = [int(row_parsed[i]) for i in range(24, 0, -1)]
         dict_request = dict()
         dict_request['nameniche'] = row_parsed[0]
         dict_request['namereg'] = args.namereg
         dict_request['lastperiod'] = lastperiod
-        dict_request['volumes'] = [int(row_parsed[i]) for i in range(24, 0, -1)]
+        dict_request['volumes'] = volumes
         dict_request['trend'] = trend(dict_request['volumes'], lastperiod.month)
 
-        array_requests.append(dict_request)
-        count_requests += 1
+        if sum(volumes[:12]) > 100:
+            array_requests.append(dict_request)
+            count_requests += 1
 
-        volume = dict_request['volumes'][0]
+        #* Подготовка к заполнению db_anomalies
+        volume = volumes[0]
         if (volume_year_ago := dict_request['volumes'][12] > 0):
             growth = dict_request['volumes'][0] / dict_request['volumes'][12] - 1
         else:
             growth = 10
-        if  growth > 0.25 or growth < -0.25:
-            dict_anomalies = dict()
-            dict_anomalies['nameniche'] = dict_request['nameniche']
-            dict_anomalies['namereg'] = dict_request['namereg']
-            dict_anomalies['trend'] = dict_request['trend']
-            dict_anomalies['anomalies'] = [{'volume': volume, 'growth': growth}]
 
+        dict_anomalies = dict()
+        dict_anomalies['nameniche'] = dict_request['nameniche']
+        dict_anomalies['namereg'] = dict_request['namereg']
+        dict_anomalies['trend'] = dict_request['trend']
+        dict_anomalies['anomalies'] = [{'volume': volume, 'growth': growth}]
+
+        if  ( sum(volumes[:12]) > 100 and 
+            volume > 100 and 
+            (growth > 0.5 or growth < -0.5)
+            ):
             array_anomalies.append(dict_anomalies)
             count_anomalies += 1
 
+#* Заполнение БД
 client = MongoClient('localhost', 27017)
 db = client['Superiority']
 requests = db['requests']
