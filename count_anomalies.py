@@ -21,6 +21,7 @@ for niche in set_niches:
         else:
             neg_anomalies += 1
 
+    db.db_anomalies.update_many({'nameniche': niche}, {'$set': {'posAnomalies': pos_anomalies, 'negAnomalies': neg_anomalies}})
     db.requests.update_many({'nameniche': niche}, {'$set': {'posAnomalies': pos_anomalies, 'negAnomalies': neg_anomalies}})
     # print(niche, ':', pos_anomalies, '/', neg_anomalies)
     print(i * 100 // len(set_niches), '%', end='\r')
